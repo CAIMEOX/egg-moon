@@ -20,7 +20,7 @@ pub fn of_sexp[T](self : SExp, intern : (String) -> T) -> Query[T] {
 }
 
 ///|
-pub fn variabls[T](self : Query[T]) -> Set[String] {
+pub fn variables[T](self : Query[T]) -> Set[String] {
   let s = Set::new()
   fn go {
     Var(sym) => s.add(sym)

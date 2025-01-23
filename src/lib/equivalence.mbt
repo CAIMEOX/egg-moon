@@ -11,6 +11,9 @@ struct Store {
 }
 
 ///|
+let store_count : Ref[Int] = @ref.new(0)
+
+///|
 pub fn op_get(self : Store, r : Int) -> Element {
   self.content[r].unwrap()
 }
@@ -21,7 +24,7 @@ pub fn op_set(self : Store, r : Int, e : Element) -> Unit {
 }
 
 ///|
-pub fn rref(self : Store, e : Element) -> Int {
+pub fn r_ref(self : Store, e : Element) -> Int {
   let l = self.limit
   self.limit = l + 1
   self.content[l] = e
@@ -30,13 +33,8 @@ pub fn rref(self : Store, e : Element) -> Int {
 
 ///|
 pub fn make(self : Store) -> Int {
-  let mut i = 0
-  fn incr() -> Element {
-    i = i + 1
-    Root(i)
-  }
-
-  self.rref(incr())
+  store_count.update(fn(x) { x + 1 })
+  self.r_ref(Root(store_count.val))
 }
 
 ///|
@@ -78,4 +76,9 @@ pub fn union(self : Store, x : Int, y : Int) -> Int {
   let x = self.find(x)
   let y = self.find(y)
   self.link(x, y)
+}
+
+///|
+pub fn create_store() -> Store {
+  { limit: 0, content: Map::new() }
 }
