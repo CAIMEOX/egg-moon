@@ -1,3 +1,5 @@
+type Id UInt derive(Eq,Default,Show,Hash)
+
 ///|
 struct EGraph {
   mut version : Int
