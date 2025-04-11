@@ -1,27 +1,26 @@
 ///|
-struct EClass[L, D] {
+struct EClass[L] {
   id : Id
   nodes : Array[L]
-  data : D
   parents : Array[Id]
 }
 
 ///|
-pub fn is_empty[L, D](self : EClass[L, D]) -> Bool {
+pub fn is_empty[L](self : EClass[L]) -> Bool {
   self.nodes.is_empty()
 }
 
 ///|
-pub fn length[L, D](self : EClass[L, D]) -> Int {
+pub fn length[L](self : EClass[L]) -> Int {
   self.nodes.length()
 }
 
 ///|
-pub fn iter[L, D](self : EClass[L, D]) -> Iter[L] {
+pub fn iter[L](self : EClass[L]) -> Iter[L] {
   self.nodes.iter()
 }
 
 ///|
-pub fn parents[L, D](self : EClass[L, D]) -> Iter[Id] {
+pub fn parents[L](self : EClass[L]) -> Iter[Id] {
   self.parents.iter()
 }

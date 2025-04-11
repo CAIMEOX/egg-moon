@@ -1,11 +1,7 @@
 // type Discriminant Symbol
 
-///|
-trait Discriminant {}
-
-///|
 trait Language {
-  discirminant() -> (Self) -> &Discriminant
+  discirminant() -> (Self) -> Symbol
   mathces(Self, Self) -> Bool
   children(Self) -> ArrayView[Id]
   children_mut(Self) -> Array[Id]
