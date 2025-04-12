@@ -1,10 +1,15 @@
 // type Discriminant Symbol
 
-trait Language {
+///|
+trait Language : Hash + Eq + Compare + Clone {
   discirminant() -> (Self) -> Symbol
   mathces(Self, Self) -> Bool
   children(Self) -> ArrayView[Id]
   children_mut(Self) -> Array[Id]
+}
+
+trait Clone {
+  clone(Self) -> Self
 }
 
 ///|
@@ -37,7 +42,7 @@ pub fn update_children[L : Language](l : L, f : (Id) -> Id) -> Unit {
 }
 
 ///|
-pub fn map_children[L : Language](l : L, f : (Id) -> Id) -> L {
+pub fn map_children_inplace[L : Language](l : L, f : (Id) -> Id) -> L {
   update_children(l, f)
   l
 }
@@ -64,14 +69,32 @@ pub fn RecExpr::add[L : Language](self : RecExpr[L], node : L) -> Id {
 }
 
 ///|
+pub fn RecExpr::fold[L, T](self : RecExpr[L], init~ : T, f : (T, Id) -> T) -> T {
+  let mut acc = init
+  for id in self.ids() {
+    acc = f(acc, id)
+  }
+  acc
+}
+
+///|
+pub fn RecExpr::length[L](self : RecExpr[L]) -> Int {
+  self.fold(init=0, fn(len, _) { len + 1 })
+}
+
+///|
 pub fn compact[T : Language + Eq + Hash](self : RecExpr[T]) -> RecExpr[T] {
   let ids = @moonbitlang/core/hashmap.new()
   let set = Set::new()
   for i, node in self.nodes.drain(0, self.nodes.length()) {
-    let node = map_children(node, fn { id => ids[id].unwrap() })
+    let node = map_children_inplace(node, fn { id => ids[id].unwrap() })
     let new_id = set.add(node)
     ...
   }
   self.nodes.append(set.iter().to_array())
   self
+}
+
+pub fn RecExpr::iter[L](self : RecExpr[L]) -> Iter[L] {
+  self.nodes.iter()
 }
