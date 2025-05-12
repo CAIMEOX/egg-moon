@@ -1,13 +1,14 @@
 // type Discriminant Symbol
 
 ///|
-trait Language : Hash + Eq + Compare + Clone {
-  discirminant() -> (Self) -> Symbol
+trait Language: Hash + Eq + Compare + Clone {
+  discirminant(Self) -> Symbol
   mathces(Self, Self) -> Bool
   children(Self) -> ArrayView[Id]
   children_mut(Self) -> Array[Id]
 }
 
+///|
 trait Clone {
   clone(Self) -> Self
 }
@@ -95,6 +96,7 @@ pub fn compact[T : Language + Eq + Hash](self : RecExpr[T]) -> RecExpr[T] {
   self
 }
 
+///|
 pub fn RecExpr::iter[L](self : RecExpr[L]) -> Iter[L] {
   self.nodes.iter()
 }

@@ -7,7 +7,7 @@ pub struct EGraph[L, N] {
   pending : Array[Id]
   analysis_pending : Unit // TODO: UniqueQueue
   classes : Map[Id, EClass[L]]
-  classes_by_op : Map[Symbol, Set[Id]]
+  mut classes_by_op : Map[Symbol, Set[Id]]
   mut clean : Bool
 }
 
@@ -103,4 +103,117 @@ pub fn make_new_elcass[L : Language, N](
   self.pending.push(id0)
   self.classes[id0] = class
   id0
+}
+
+///|
+pub fn process_unions[L : Language, N](self : EGraph[L, N]) -> UInt {
+  let mut n_unions = 0U
+  while not(self.pending.is_empty()) {
+    if self.pending.pop() is Some(class) {
+      let node = self.nodes[class._.reinterpret_as_int()].clone()
+      node |> update_children(fn(id) { self.union_find.find_mut(id) })
+      match self.memo.get(node) {
+        Some(old) => {
+          self.memo[node] = class
+          let did_sth = self.perform_union(
+            old,
+            class,
+            Some(Justification::Congruence),
+          )
+          n_unions += did_sth.to_uint()
+        }
+        None => self.memo[node] = class
+      }
+    }
+  }
+  guard self.pending.is_empty()
+  n_unions
+}
+
+///|
+pub fn perform_union[L : Language, N](
+  self : EGraph[L, N],
+  enode_id1 : Id,
+  enode_id2 : Id,
+  _rule : Justification?
+) -> Bool {
+  // todo: pre_union hook for N
+  self.clean = false
+  let mut id1 = self.union_find.find_mut(enode_id1)
+  let mut id2 = self.union_find.find_mut(enode_id2)
+  // todo : explain 
+  if id1 == id2 {
+    return false
+  }
+  let class1_parents = self.classes.get(id1).unwrap().parents.length()
+  let class2_parents = self.classes.get(id2).unwrap().length()
+  if class1_parents < class2_parents {
+    let tmp = id1
+    id1 = id2
+    id2 = tmp
+  }
+  // todo : explain
+  self.union_find.union(id1, id2) |> ignore
+  guard id1 != id2
+  self.classes.remove(id2)
+  let class2 = self.classes.get(id2).unwrap()
+  let class1 = self.classes.get(id1).unwrap()
+  self.pending.append(class2.parents.copy())
+  // todo: analysis
+  class1.nodes.append(class2.nodes)
+  class1.parents.append(class2.parents)
+  true
+}
+
+///|
+pub fn rebuild[L : Language, N](self : EGraph[L, N]) -> UInt {
+  let old_hc_size = self.memo.size()
+  let old_n_eclasses = self.classes.size()
+  let n_unions = self.process_unions()
+  let _ = self.rebuild_classes()
+  self.clean = true
+  n_unions
+}
+
+///|
+pub fn rebuild_classes[L : Language, N](self : EGraph[L, N]) -> Int {
+  let classes_by_op = self.classes_by_op
+  self.classes_by_op = Map::default()
+  for ids in classes_by_op.values() {
+    ids.clear()
+  }
+  let mut trimmed = 0
+  let uf = self.union_find
+  for class in self.classes.values() {
+    let old_len = class.length()
+    for n in class.nodes {
+      n |> update_children(fn(id) { uf.find_mut(id) })
+    }
+    class.nodes.sort()
+    class.nodes.dedup()
+    trimmed += old_len - class.nodes.length()
+    let add = fn {
+      (n : L) =>
+        match classes_by_op.get(L::discirminant(n)) {
+          Some(set) => set.add(class.id)
+          None => {
+            let set = Set::new()
+            set.add(class.id)
+            classes_by_op[L::discirminant(n)] = set
+          }
+        }
+    }
+    if not(class.nodes.is_empty()) {
+      let prev = class.nodes[0]
+      add(prev)
+      for n in class.nodes[1:] {
+        if not(prev.mathces(n)) {
+          add(n)
+          class.nodes[0] = n
+        }
+      }
+    }
+  }
+  self.classes_by_op = classes_by_op
+  trimmed
 }

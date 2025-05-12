@@ -1,2 +1,2 @@
-struct Analysis[L, D] {
-}
+///|
+struct Analysis[L, D] {}
