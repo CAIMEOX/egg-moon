@@ -28,6 +28,20 @@ pub fn UnionFind::find(self : UnionFind, current : Id) -> Id {
 }
 
 ///|
+pub fn UnionFind::find_mut(self : UnionFind, current : Id) -> Id {
+  loop current {
+    c =>
+      if c != self.parent(c) {
+        let grandparent = self.parent(self.parent(c))
+        self.parents[c._.reinterpret_as_int()] = grandparent
+        continue grandparent
+      } else {
+        break c
+      }
+  }
+}
+
+///|
 pub fn UnionFind::union(self : UnionFind, r1 : Id, r2 : Id) -> Id {
   self.parents[r2._.reinterpret_as_int()] = r1
   r1
@@ -52,7 +66,7 @@ test "union find" {
   uf.union(6, 8) |> ignore
   uf.union(6, 9) |> ignore
   for i in 0..<n {
-    uf.find(i.to_uint()) |> ignore
+    uf.find_mut(i.to_uint()) |> ignore
   }
   assert_eq!(uf.parents, [
     Id(0),

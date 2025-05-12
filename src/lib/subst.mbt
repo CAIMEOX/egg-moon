@@ -1,11 +1,11 @@
 ///| 
-type Symbol UInt derive(Eq,Show)
+type Symbol UInt derive(Eq, Show, Hash)
 
 ///|
 enum Var {
   Sym(Symbol)
   Num(UInt)
-} derive(Eq,Show)
+} derive(Eq, Show)
 
 ///|
 pub fn Var::from_uint(u : UInt) -> Var {
@@ -71,6 +71,7 @@ pub fn Var::parse(str : String) -> Var! {
   }
 }
 
+///|
 test "subst" {
   inspect!(Var::parse?("?#123"), content="Ok(Num(123))")
 }

@@ -5,9 +5,10 @@ struct SearchMatches[L] {
   ast : RecExpr[ENodeOrVar[L]]?
 }
 
+///|
 struct Pattern[L] {
-  ast: RecExpr[ENodeOrVar[L]]
-  program: Program[L]
+  ast : RecExpr[ENodeOrVar[L]]
+  program : Program[L]
 }
 
 ///|
