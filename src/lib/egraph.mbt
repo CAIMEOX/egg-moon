@@ -12,7 +12,7 @@ pub struct EGraph[L, N] {
 }
 
 ///|
-pub fn EGraph::new[L, N](n : N) -> EGraph[L, N] {
+pub fn[L, N] EGraph::new(n : N) -> EGraph[L, N] {
   {
     analysis: n,
     nodes: [],
@@ -27,28 +27,47 @@ pub fn EGraph::new[L, N](n : N) -> EGraph[L, N] {
 }
 
 ///|
-pub fn classes[L, N](self : EGraph[L, N]) -> Iter[EClass[L]] {
+pub fn[L, N] classes(self : EGraph[L, N]) -> Iter[EClass[L]] {
   self.classes.values()
 }
 
 ///|
-pub fn EGraph::is_empty[L, N](self : EGraph[L, N]) -> Bool {
+pub fn[L, N] number_of_classes(self : EGraph[L, N]) -> Int {
+  self.classes.size()
+}
+
+///|
+pub fn[L, N] EGraph::is_empty(self : EGraph[L, N]) -> Bool {
   self.memo.is_empty()
 }
 
 ///|
-pub fn add_expr[L : Language, N](self : EGraph[L, N], expr : RecExpr[L]) -> Id {
+pub fn[L : Language, N] add_expr(self : EGraph[L, N], expr : RecExpr[L]) -> Id {
   let id = self.add_expr_uncanonical(expr)
   self.find(id)
 }
 
 ///|
-pub fn EGraph::find[L, N](self : EGraph[L, N], id : Id) -> Id {
+pub fn[L, N] EGraph::find(self : EGraph[L, N], id : Id) -> Id {
   self.union_find.find(id)
 }
 
 ///|
-pub fn add_expr_uncanonical[L : Language, N](
+pub fn[L : Language, N] EGraph::union(
+  self : EGraph[L, N],
+  id1 : Id,
+  id2 : Id
+) -> Bool {
+  self.perform_union(id1, id2, None)
+}
+
+///|
+pub fn[L, N] classes_for_op(self : EGraph[L, N], op : Symbol) -> Iter[Id]? {
+  self.classes_by_op.get(op).map(Set::iter)
+}
+
+///|
+pub fn[L : Language, N] add_expr_uncanonical(
   self : EGraph[L, N],
   expr : RecExpr[L]
 ) -> Id {
@@ -56,7 +75,9 @@ pub fn add_expr_uncanonical[L : Language, N](
   let new_node_q = Array::new(capacity=expr.length())
   for node in expr {
     let new_node = node.clone()
-      |> map_children_inplace(fn(id) { new_ids[id._.reinterpret_as_int()] })
+      |> map_children_inplace(fn(id) {
+        new_ids[id.inner().reinterpret_as_int()]
+      })
     let size_before = self.union_find.size()
     let next_id = self.add_uncanonical(new_node)
     new_node_q.push(self.union_find.size() > size_before)
@@ -66,13 +87,18 @@ pub fn add_expr_uncanonical[L : Language, N](
 }
 
 ///|
-pub fn lookup_internal[L : Language, N](self : EGraph[L, N], node : L) -> Id? {
+pub fn[L : Language, N] lookup_internal(self : EGraph[L, N], node : L) -> Id? {
   node |> update_children(fn(id) { self.find(id) })
   self.memo[node]
 }
 
 ///|
-pub fn add_uncanonical[L : Language, N](self : EGraph[L, N], node : L) -> Id {
+pub fn[L, N] total_size(self : EGraph[L, N]) -> Int {
+  self.memo.size()
+}
+
+///|
+pub fn[L : Language, N] add_uncanonical(self : EGraph[L, N], node : L) -> Id {
   let original = node.clone()
   if self.lookup_internal(node) is Some(e_id) {
     let id = self.find(e_id)
@@ -85,13 +111,19 @@ pub fn add_uncanonical[L : Language, N](self : EGraph[L, N], node : L) -> Id {
 }
 
 ///|
-pub fn EGraph::op_get[L, N](self : EGraph[L, N], id : Id) -> EClass[L] {
+pub fn[L, N] EGraph::op_get(self : EGraph[L, N], id : Id) -> EClass[L] {
   let id = self.find(id)
   self.classes[id].unwrap()
 }
 
 ///|
-pub fn make_new_elcass[L : Language, N](
+pub fn[L : Language, N] add(self : EGraph[L, N], node : L) -> Id {
+  let id = self.add_uncanonical(node)
+  self.union_find.find(id)
+}
+
+///|
+pub fn[L : Language, N] make_new_elcass(
   self : EGraph[L, N],
   node : L,
   original : L
@@ -106,11 +138,11 @@ pub fn make_new_elcass[L : Language, N](
 }
 
 ///|
-pub fn process_unions[L : Language, N](self : EGraph[L, N]) -> UInt {
+pub fn[L : Language, N] process_unions(self : EGraph[L, N]) -> UInt {
   let mut n_unions = 0U
   while not(self.pending.is_empty()) {
     if self.pending.pop() is Some(class) {
-      let node = self.nodes[class._.reinterpret_as_int()].clone()
+      let node = self.nodes[class.inner().reinterpret_as_int()].clone()
       node |> update_children(fn(id) { self.union_find.find_mut(id) })
       match self.memo.get(node) {
         Some(old) => {
@@ -131,7 +163,7 @@ pub fn process_unions[L : Language, N](self : EGraph[L, N]) -> UInt {
 }
 
 ///|
-pub fn perform_union[L : Language, N](
+pub fn[L : Language, N] perform_union(
   self : EGraph[L, N],
   enode_id1 : Id,
   enode_id2 : Id,
@@ -166,7 +198,7 @@ pub fn perform_union[L : Language, N](
 }
 
 ///|
-pub fn rebuild[L : Language, N](self : EGraph[L, N]) -> UInt {
+pub fn[L : Language, N] rebuild(self : EGraph[L, N]) -> UInt {
   let old_hc_size = self.memo.size()
   let old_n_eclasses = self.classes.size()
   let n_unions = self.process_unions()
@@ -176,7 +208,7 @@ pub fn rebuild[L : Language, N](self : EGraph[L, N]) -> UInt {
 }
 
 ///|
-pub fn rebuild_classes[L : Language, N](self : EGraph[L, N]) -> Int {
+pub fn[L : Language, N] rebuild_classes(self : EGraph[L, N]) -> Int {
   let classes_by_op = self.classes_by_op
   self.classes_by_op = Map::default()
   for ids in classes_by_op.values() {

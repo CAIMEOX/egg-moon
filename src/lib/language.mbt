@@ -14,12 +14,12 @@ trait Clone {
 }
 
 ///|
-pub fn each[L : Language](l : L, f : (Id) -> Unit) -> Unit {
+pub fn[L : Language] each(l : L, f : (Id) -> Unit) -> Unit {
   l.children().each(f)
 }
 
 ///|
-pub fn fold[T, L : Language](l : L, f : (T, Id) -> T, init : T) -> T {
+pub fn[T, L : Language] fold(l : L, f : (T, Id) -> T, init : T) -> T {
   let mut acc = init
   for id in l.children() {
     acc = f(acc, id)
@@ -28,22 +28,22 @@ pub fn fold[T, L : Language](l : L, f : (T, Id) -> T, init : T) -> T {
 }
 
 ///|
-pub fn all[L : Language](l : L, f : (Id) -> Bool) -> Bool {
+pub fn[L : Language] all(l : L, f : (Id) -> Bool) -> Bool {
   fold(l, fn(acc, id) { acc && f(id) }, true)
 }
 
 ///|
-pub fn any[L : Language](l : L, f : (Id) -> Bool) -> Bool {
+pub fn[L : Language] any(l : L, f : (Id) -> Bool) -> Bool {
   fold(l, fn(acc, id) { acc || f(id) }, false)
 }
 
 ///|
-pub fn update_children[L : Language](l : L, f : (Id) -> Id) -> Unit {
+pub fn[L : Language] update_children(l : L, f : (Id) -> Id) -> Unit {
   l.children_mut().map_inplace(f)
 }
 
 ///|
-pub fn map_children_inplace[L : Language](l : L, f : (Id) -> Id) -> L {
+pub fn[L : Language] map_children_inplace(l : L, f : (Id) -> Id) -> L {
   update_children(l, f)
   l
 }
@@ -54,23 +54,23 @@ struct RecExpr[L] {
 } derive(Default)
 
 ///|
-pub fn ids[L](self : RecExpr[L]) -> Array[Id] {
+pub fn[L] ids(self : RecExpr[L]) -> Array[Id] {
   Array::makei(self.nodes.length(), fn(i) { Id(i.reinterpret_as_uint()) })
 }
 
 ///|
-pub fn root[L](self : RecExpr[L]) -> Id {
+pub fn[L] root(self : RecExpr[L]) -> Id {
   self.ids().last().unwrap()
 }
 
 ///|
-pub fn RecExpr::add[L : Language](self : RecExpr[L], node : L) -> Id {
+pub fn[L] RecExpr::add(self : RecExpr[L], node : L) -> Id {
   self.nodes.push(node)
   self.root()
 }
 
 ///|
-pub fn RecExpr::fold[L, T](self : RecExpr[L], init~ : T, f : (T, Id) -> T) -> T {
+pub fn[L, T] RecExpr::fold(self : RecExpr[L], init~ : T, f : (T, Id) -> T) -> T {
   let mut acc = init
   for id in self.ids() {
     acc = f(acc, id)
@@ -79,16 +79,16 @@ pub fn RecExpr::fold[L, T](self : RecExpr[L], init~ : T, f : (T, Id) -> T) -> T 
 }
 
 ///|
-pub fn RecExpr::length[L](self : RecExpr[L]) -> Int {
+pub fn[L] RecExpr::length(self : RecExpr[L]) -> Int {
   self.fold(init=0, fn(len, _) { len + 1 })
 }
 
 ///|
-pub fn compact[T : Language + Eq + Hash](self : RecExpr[T]) -> RecExpr[T] {
+pub fn[T : Language + Eq + Hash] compact(self : RecExpr[T]) -> RecExpr[T] {
   let ids = @moonbitlang/core/hashmap.new()
   let set = Set::new()
   for i, node in self.nodes.drain(0, self.nodes.length()) {
-    let node = map_children_inplace(node, fn { id => ids[id].unwrap() })
+    let node = map_children_inplace(node, id => ids.get(id).unwrap())
     let new_id = set.add(node)
     ...
   }
@@ -97,6 +97,6 @@ pub fn compact[T : Language + Eq + Hash](self : RecExpr[T]) -> RecExpr[T] {
 }
 
 ///|
-pub fn RecExpr::iter[L](self : RecExpr[L]) -> Iter[L] {
+pub fn[L] RecExpr::iter(self : RecExpr[L]) -> Iter[L] {
   self.nodes.iter()
 }

@@ -5,7 +5,7 @@ enum Query[T] {
 }
 
 ///|
-pub fn of_sexp[T](self : SExp, intern : (String) -> T) -> Query[T] {
+pub fn[T] of_sexp(self : SExp, intern : (String) -> T) -> Query[T] {
   match self {
     Atom(s) =>
       if s.starts_with("?") {
@@ -20,7 +20,7 @@ pub fn of_sexp[T](self : SExp, intern : (String) -> T) -> Query[T] {
 }
 
 ///|
-pub fn variables[T](self : Query[T]) -> Set[String] {
+pub fn[T] variables(self : Query[T]) -> Set[String] {
   let s = Set::new()
   fn go {
     Query::Var(sym) => s.add(sym)

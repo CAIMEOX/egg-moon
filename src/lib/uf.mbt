@@ -17,7 +17,7 @@ pub fn make_set(self : UnionFind) -> Id {
 
 ///|
 pub fn parent(self : UnionFind, query : Id) -> Id {
-  self.parents[query._.reinterpret_as_int()]
+  self.parents[query.inner().reinterpret_as_int()]
 }
 
 ///|
@@ -33,7 +33,7 @@ pub fn UnionFind::find_mut(self : UnionFind, current : Id) -> Id {
     c =>
       if c != self.parent(c) {
         let grandparent = self.parent(self.parent(c))
-        self.parents[c._.reinterpret_as_int()] = grandparent
+        self.parents[c.inner().reinterpret_as_int()] = grandparent
         continue grandparent
       } else {
         break c
@@ -43,7 +43,7 @@ pub fn UnionFind::find_mut(self : UnionFind, current : Id) -> Id {
 
 ///|
 pub fn UnionFind::union(self : UnionFind, r1 : Id, r2 : Id) -> Id {
-  self.parents[r2._.reinterpret_as_int()] = r1
+  self.parents[r2.inner().reinterpret_as_int()] = r1
   r1
 }
 
@@ -58,7 +58,7 @@ test "union find" {
   for _ in 0..<n {
     uf.make_set() |> ignore
   }
-  assert_eq!(uf.parents, ids(n))
+  assert_eq(uf.parents, ids(n))
   uf.union(0, 1) |> ignore
   uf.union(0, 2) |> ignore
   uf.union(0, 3) |> ignore
@@ -68,7 +68,7 @@ test "union find" {
   for i in 0..<n {
     uf.find_mut(i.to_uint()) |> ignore
   }
-  assert_eq!(uf.parents, [
+  assert_eq(uf.parents, [
     Id(0),
     Id(0),
     Id(0),

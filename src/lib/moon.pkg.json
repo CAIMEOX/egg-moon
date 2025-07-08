@@ -1,1 +1,8 @@
-{}
+{
+    "import":[
+        {
+            "path": "kesmeey/IndexMap",
+            "alias": "im"
+        }
+    ]
+}

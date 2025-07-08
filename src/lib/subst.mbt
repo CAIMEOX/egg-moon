@@ -57,21 +57,21 @@ pub fn Subst::op_get(self : Subst, var : Var) -> Id? {
 }
 
 ///|
-priv type! VarParseError
+priv suberror VarParseError
 
 ///|
-pub fn Var::parse(str : String) -> Var! {
+pub fn Var::parse(str : String) -> Var raise {
   match str {
     ['?', '#', .. x] => {
-      let a : UInt = @strconv.parse!(x.to_string())
+      let a : UInt = @strconv.parse(x.to_string())
       Var::from_uint(a)
     }
-    ['?', .. s] => Sym(Symbol(@strconv.parse!(s.to_string())))
+    ['?', .. s] => Sym(Symbol(@strconv.parse(s.to_string())))
     _ => raise VarParseError
   }
 }
 
 ///|
 test "subst" {
-  inspect!(Var::parse?("?#123"), content="Ok(Num(123))")
+  inspect(Var::parse?("?#123"), content="Ok(Num(123))")
 }

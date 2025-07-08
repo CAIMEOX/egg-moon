@@ -1,5 +1,5 @@
 ///|
-typealias L[T] = @immut/list.T[T]
+typealias @immut/list.T as L
 
 ///|
 enum SExp {

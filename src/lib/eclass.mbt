@@ -6,21 +6,21 @@ struct EClass[L] {
 }
 
 ///|
-pub fn is_empty[L](self : EClass[L]) -> Bool {
+pub fn[L] is_empty(self : EClass[L]) -> Bool {
   self.nodes.is_empty()
 }
 
 ///|
-pub fn length[L](self : EClass[L]) -> Int {
+pub fn[L] length(self : EClass[L]) -> Int {
   self.nodes.length()
 }
 
 ///|
-pub fn iter[L](self : EClass[L]) -> Iter[L] {
+pub fn[L] iter(self : EClass[L]) -> Iter[L] {
   self.nodes.iter()
 }
 
 ///|
-pub fn parents[L](self : EClass[L]) -> Iter[Id] {
+pub fn[L] parents(self : EClass[L]) -> Iter[Id] {
   self.parents.iter()
 }
